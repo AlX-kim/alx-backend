@@ -1,13 +1,13 @@
 #!/usr/bin/python3
 """
-    BaseCache module
+    MRU module
 """
 
 from base_caching import BaseCaching
 
 
-class FIFOCache(BaseCaching):
-    """ FIFOCache define a FIFO algorithm to use cache
+class MRUCache(BaseCaching):
+    """ MRUCache define MRU algorithm to use cache
 
       To use:
       >>> my_cache = BasicCache()
@@ -18,26 +18,23 @@ class FIFOCache(BaseCaching):
       >>> my_cache.print_cache()
       A: Hello
 
-      >>> print(my_cache.get("A"))
-      Hello
-
       Ex:
-      >>> print(self.cache_data)
-      {A: "Hello", B: "World", C: "Holberton", D: "School"}
-      >>> my_cache.put("C", "Street")
-      >>> print(self.cache_data)
-      {A: "Hello", B: "World", C: "Street", D: "School"}
-
-      >>> my_cache.put("F", "COD")
-      DISCARD: A
-      >>> print(self.cache_data)
-      {F: "COD", B: "World", C: "Holberton", D: "School"}
+      >>> my_cache.print_cache()
+      Current cache:
+      A: Hello
+      B: World
+      C: Holberton
+      D: School
+      >>> print(my_cache.get("B"))
+      World
+      DISCARD: B
     """
 
     def __init__(self):
         """ Initiliaze
         """
         super().__init__()
+        self.leastrecent = []
 
     def put(self, key, item):
         """
@@ -49,11 +46,21 @@ class FIFOCache(BaseCaching):
         """
         if key or item is not None:
             valuecache = self.get(key)
+            # Make a new
             if valuecache is None:
                 if len(self.cache_data) >= BaseCaching.MAX_ITEMS:
-                    keydel = list(self.cache_data.keys())[0]
-                    del self.cache_data[keydel]
-                    print("DISCARD: {}".format(keydel))
+                    keydel = self.leastrecent
+                    lendel = len(keydel) - 1
+                    del self.cache_data[keydel[lendel]]
+                    print("DISCARD: {}".format(self.leastrecent.pop()))
+            else:
+                del self.cache_data[key]
+
+            if key in self.leastrecent:
+                self.leastrecent.remove(key)
+                self.leastrecent.append(key)
+            else:
+                self.leastrecent.append(key)
 
             self.cache_data[key] = item
 
@@ -67,6 +74,10 @@ class FIFOCache(BaseCaching):
             Return:
                 value of the key
         """
-
         valuecache = self.cache_data.get(key)
+
+        if valuecache:
+            self.leastrecent.remove(key)
+            self.leastrecent.append(key)
+
         return valuecache

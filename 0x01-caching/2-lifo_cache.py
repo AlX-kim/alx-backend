@@ -6,8 +6,8 @@
 from base_caching import BaseCaching
 
 
-class FIFOCache(BaseCaching):
-    """ FIFOCache define a FIFO algorithm to use cache
+class LIFOCache(BaseCaching):
+    """ LIFOCache define a FIFO algorithm to use cache
 
       To use:
       >>> my_cache = BasicCache()
@@ -26,12 +26,12 @@ class FIFOCache(BaseCaching):
       {A: "Hello", B: "World", C: "Holberton", D: "School"}
       >>> my_cache.put("C", "Street")
       >>> print(self.cache_data)
-      {A: "Hello", B: "World", C: "Street", D: "School"}
+      {A: "Hello", B: "World", D: "School",  C: "Street"}
 
       >>> my_cache.put("F", "COD")
-      DISCARD: A
+      DISCARD: C
       >>> print(self.cache_data)
-      {F: "COD", B: "World", C: "Holberton", D: "School"}
+      {F: "COD", B: "World", D: "School", F, "COD"}
     """
 
     def __init__(self):
@@ -49,12 +49,18 @@ class FIFOCache(BaseCaching):
         """
         if key or item is not None:
             valuecache = self.get(key)
+            # Make a new
             if valuecache is None:
                 if len(self.cache_data) >= BaseCaching.MAX_ITEMS:
-                    keydel = list(self.cache_data.keys())[0]
-                    del self.cache_data[keydel]
-                    print("DISCARD: {}".format(keydel))
-
+                    keydel = list(self.cache_data.keys())
+                    lenlast = len(keydel) - 1
+                    del self.cache_data[keydel[lenlast]]
+                    print("DISCARD: {}".format(keydel[lenlast]))
+            # If it's None this del the key and after update the same key
+            # If it's wrong fix eliminate and ask
+            else:
+                del self.cache_data[key]
+            # Modify value
             self.cache_data[key] = item
 
     def get(self, key):
